@@ -95,8 +95,8 @@ If there are no candidates, the assistant says so. It does not pad the list with
 **Why.** A base built once goes stale. Tiny, regular corrections keep it aligned with what the owner actually values, without a big review session.
 
 ## Next (roadmap)
-- **Done:** the weekly digest with data refresh and improvement questions, touch history, the priority queue, and the engaged layer.
-- **Deferred:** network roles (connector / knowledge holder / bridge), "new follows of your priority people", and cluster visualization. They need a who-talks-to-whom graph or many reads.
+- **Done:** the weekly digest with data refresh and improvement questions, touch history, the priority queue, the engaged layer, and the network map (image or short video, see [MAP.md](MAP.md)).
+- **Deferred:** network roles (connector / knowledge holder / bridge) and "new follows of your priority people". They need a who-talks-to-whom graph or many reads.
 - Every N weeks, refresh old cards from a fresh slice.
 - Send answers directly from the page, without copying lines.
 - Tell a real person from a spam farm more accurately.

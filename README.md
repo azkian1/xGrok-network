@@ -169,7 +169,6 @@ The kit is written in English. Briefings and notes default to English (`language
 
 - **Network roles.** Mark people as *connectors* (who link others), *knowledge holders* (who spot signals first), and *bridges* (who link you to other niches). This needs a who-talks-to-whom graph, which is expensive to read, so it may start with only the clearest cases.
 - **Follows of your priority people.** See whom your key people started following. This is expensive on X, so if it ships it will cover 5–10 people once a week.
-- **Network map, richer later.** The still map (and a short video) is available on request; see [MAP.md](MAP.md). Later it may also show roles more clearly, and where the gaps are.
 
 See [PRINCIPLES.md](PRINCIPLES.md#next-roadmap) for the smaller items.
 
