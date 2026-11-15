@@ -8,7 +8,7 @@ You answer a few short questions, mostly with clicks. The assistant does the rea
 - **Easiest:** open the xGrok network bot template link (coming soon) and the new bot walks you through setup.
 - **Or tell your Grok Bot:** "Install the skill from https://github.com/azkian1/xGrok-network and set up my network CRM."
 
-The bot reads [SKILL.md](SKILL.md), asks you a few questions (niche, goals, priority people, language, when to send briefings), builds your base, and creates the routines. No copying files or prompts.
+The bot reads [SKILL.md](SKILL.md), asks you a few questions (niche, goals, what to grow, priority people, when to send briefings), builds your base, and creates the routines. No copying files or prompts.
 
 ---
 
@@ -32,14 +32,14 @@ People CRM is a set of plain Markdown files: rules, templates, and prompts. You 
 
 ## What you get
 
-- **Daily briefing.** One short message, and only when there is a reason to send one. It lists sleeping accounts that woke up, 1–3 people worth talking to today along with an idea of what to say, new engaged people, a few disputed accounts to sort, and one question of the day. If nothing is new, there is no message.
+- **Daily briefing.** One short message, and only when there is a reason to send one, in this order: sleeping accounts that woke up, 1–3 people worth talking to today along with an idea of what to say, new engaged people, a few disputed accounts to sort, and one question of the day. A person appears only once (if they are disputed and in today's queue, they stay in the queue section with a short clarify note). If nothing is new, there is no message.
 - **Weekly digest with improvement questions.** The strongest posts from your priority people, sleeping accounts that woke up, top engaged people, and next week's queue. It ends with 3–5 click-to-answer questions that sharpen the base over time.
 - **Weekly data refresh.** Follows, followers, bios, follower counts, and activity are re-read in cheap batches, and changes are reported in one line. The same follower read also rebuilds the follower roster and the verified-followers list.
-- **Three follower lists.** A roster of every follower (`FOLLOWERS.md`), people who interact with you even if they don't follow you (`ENGAGED.md`), and followers with an X verification badge (`VERIFIED.md`). No card for every follower.
+- **Three follower lists.** A roster of every follower (`FOLLOWERS.md`), people who interact with you (`ENGAGED.md` — non-follows only after sustained contact over weeks, not a day or two conversations), and followers with an X verification badge (`VERIFIED.md`). People you do not follow are not in the network until you follow them or confirm a card (CONFIG section 9).
 - **Cleanup and the unfollow list.** Long-AFK accounts, bots, people who no longer match your interests, and off-niche project accounts go into `QUARANTINE.md`. You unfollow from that list yourself, and the cards are archived, not deleted. If there are no candidates, the assistant says so.
 - **Watchlist of sleeping accounts.** Quiet accounts whose return would be news, like a former opinion leader, a paused project, or an old competitor, get checked every day with one batched request.
 - **Touch history.** Every reply, quote, mention, and (if you paste it in) DM between you and a person is logged on their card, along with a `last_touch` date.
-- **Priority queue.** A short weekly list of people worth engaging with, scored by why they matter to you, your goals, two-way contact, and how long it has been since you last talked. Strangers stay in the engaged list until you confirm a card.
+- **Priority queue.** A short weekly list of people worth engaging with, scored by why they matter to you, your goals, two-way contact, and how long it has been since the last two-way exchange. Only two-way exchanges count as contact; an outgoing-only touch counts for nothing. Warm contacts (2+ two-way exchanges) always outrank people with no two-way contact. Auto-filled cards count as confirmed; only disputed cards are unconfirmed. People you do not follow stay out of the queue until you follow them or confirm a card.
 
 ## How it works
 
@@ -57,13 +57,13 @@ flowchart LR
     Y --> C
 ```
 
-The assistant reads X, writes a card for everyone you follow, classifies them automatically, and builds the briefings from the cards. Followers go into three lists, not into individual cards. Each answer you give goes back into the cards, so the next briefing is a little better.
+The assistant reads X, writes a card for everyone you follow, classifies them automatically, and builds the briefings from the cards. People you do not follow are not in the network: they go into lists, not into cards, until you follow them or confirm a card. Each answer you give goes back into the cards, so the next briefing is a little better.
 
 ## Manual setup (any AI assistant)
 
 1. **Get the kit.** Copy `CONFIG.example.md` to `CONFIG.md` and fill in your X handle. Everything else has sensible defaults.
 2. **Start the setup.** Open a chat with your assistant, attach the kit files (or link to this repo), and paste the setup prompt from [SETUP.md](SETUP.md#4-setup-prompt).
-3. **Answer the onboarding questions.** The assistant asks six short questions: your niche, your goals for your network (ideas, collabs, audience, or just reading), what you want to grow, which people matter most, the language, and **when you want your briefings** (daily time and timezone, weekly day and time; defaults are 09:00 daily and Sunday 18:00).
+3. **Answer the onboarding questions.** The assistant asks five short questions: your niche, your goals for your network (ideas, collabs, audience, or just reading), what you want to grow, which people matter most, and **when you want your briefings** (daily time and timezone, weekly day and time; defaults are 09:00 daily and Sunday 18:00).
 4. **The assistant classifies everyone in the background.** It fills in a best guess for each card. You then get one unfollow list of real candidates only (long-AFK, bots, off-interest people and projects). After that you only see disputed people, in small batches, and answer in a few words or clicks.
 5. **Turn on the routines.** Paste [routine-prompt.md](routine-prompt.md). The assistant creates the daily briefing and the weekly digest at the times you chose.
 6. *(Optional)* **Put the base on GitHub and open it in Obsidian.** See [Your base on GitHub and in Obsidian](#your-base-on-github-and-in-obsidian) below.
@@ -79,7 +79,7 @@ Good morning
    1. @indie_builder: your niche, 45 days since your last reply → their new post
       Idea: ask how they cut the onboarding to one screen
    2. @former_colleague: you noted "worked together on the launch", never touched on X
-🙋 New engaged: @thoughtful_reader, 3 substantive replies this month. Create a card?
+🙋 New engaged: @thoughtful_reader, 6 substantive replies across 4 weeks. Create a card?
 ❓ Disputed, answer by number:
    1. @some_account: two-way replies, design tools — suggest: ideas / just read
    2. @another_one: off-niche, but you have a DM history — suggest: vibes / just read
@@ -131,11 +131,11 @@ The assistant builds your base (in a separate folder) from these templates:
 | `@handle.md` | One card per person you follow |
 | `INDEX.md` | One line per card: handle, group, value, next step |
 | `FOLLOWERS.md` | Every follower, one roster line each (the +N/−M counter and mutuals) |
-| `ENGAGED.md` | People who engage with your posts, follower or not |
+| `ENGAGED.md` | People who engage with your posts (followed: 2+; non-follows: sustained, 3 weeks / 5 interactions in 60 days) |
 | `VERIFIED.md` | Followers with an X verification badge (blue or higher) |
 | `QUARANTINE.md` | The unfollow list: long-AFK, bots, off-interest people and projects |
 | `WATCHLIST.md` | Sleeping accounts and the ID of their latest post |
-| `QUEUE.md` | This week's priority queue (confirmed core cards only) |
+| `QUEUE.md` | This week's priority queue (confirmed core cards only; `auto: true` counts as confirmed) |
 | `bots/`, `_unfollowed-archive/` | Suspected bots (cluster "bots", minimal cards), and cards for accounts you unfollowed |
 | `_review-log.json`, `_questions-log.json` | Who and what has already been asked, so nothing repeats |
 | `_state.json` | since_ids, last run, reads used, the stored follow list, and `follow_list_complete` |
@@ -148,7 +148,7 @@ The assistant builds your base (in a separate folder) from these templates:
 - *Nice to have:* an assistant that can make a web page or a table with buttons, because clicking is faster than typing. Without one, everything still works in chat.
 - *Optional:* a private GitHub repository for the base, with history and pull-request review, and [Obsidian](https://obsidian.md) with the Obsidian Git plugin to browse and edit the cards as notes.
 
-The kit is written in English. Your base can be in any language: set `language` in `CONFIG.md`, and the assistant will write notes and briefings in that language.
+The kit is written in English. Briefings and notes default to English (`language: "en"` in `CONFIG.md`). The assistant never asks about language; if you ask for another one, it switches `language` and writes in it from then on.
 
 ## FAQ
 

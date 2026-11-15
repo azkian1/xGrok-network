@@ -4,14 +4,14 @@ The assistant generates these files; you don't have to edit them. The handles be
 
 ## QUEUE.md — who to engage with this week
 
-Only confirmed core cards. Strangers and other people without a confirmed core card stay in `ENGAGED.md` and do not enter this queue.
+Only confirmed core cards (people you follow, or an engaged non-follow you have explicitly confirmed). Auto-filled cards (`auto: true`) count as confirmed; only disputed cards are unconfirmed. People you do not follow stay out of this queue until you follow them or confirm a card.
 
 ```markdown
 # Engagement queue — week of YYYY-MM-DD
 
 Who it makes sense to interact with this week (reply to a post, quote, write). Only a suggestion: you write on X yourself.
 
-How the score works: see CONFIG section 10 (value, next step, your niche, your notes, two-way / warm contact, continuous day-ranges since the last touch, and a bonus for each of your goals — without double-counting value.ideas). Warm contacts outrank strangers. Unconfirmed people are excluded.
+How the score works: see CONFIG section 10 (value, next step, your niche, your notes, two-way / warm contact, continuous day-ranges since the last two-way exchange, and a bonus for each of your goals — without double-counting value.ideas). Only two-way exchanges count as contact; an outgoing-only touch counts for nothing. Warm contacts (2+ two-way exchanges) always outrank people with no two-way contact, even with the conservative auto pair (ideas / just read). Unconfirmed (disputed) people and people you do not follow are excluded.
 
 | # | handle | score | value | next_action | last touch | why |
 |---|---|---|---|---|---|---|
@@ -26,12 +26,12 @@ The assistant keeps a small log of who was in the queue each week and whom it al
 
 ## ENGAGED.md — people who come to you
 
-People who interact with your posts, whether you follow them or not. Strangers (people you don't follow) stay here for you to review and do not enter the contact queue until you confirm a card.
+People who interact with your posts. Accounts you follow enter at 2+ interactions. People you do not follow enter only if they interact often and over time (at least 5 interactions, on at least 3 different weeks, within 60 days — not one day, and not a couple of conversations). There is no "one-off worth a look" section. Engaged non-follows get no card, no queue spot, and no disputed review until you follow them or confirm a card (CONFIG section 9).
 
 ```markdown
 # Engaged (last 30 days)
 
-People who interact with your posts (replies, mentions, quotes), even if you don't follow them. Threshold: 2+ interactions in 30 days. Accounts in bots/ are skipped.
+People who interact with your posts (replies, mentions, quotes). Accounts you follow: 2+ interactions in 30 days. Accounts you do not follow: at least 5 interactions, on at least 3 different weeks, within 60 days. Accounts in bots/ are skipped.
 
 ### [@example_fan](https://x.com/example_fan) — substantive, 3 in 30 days
 - Where now: not followed | in FOLLOWERS.md | has a core card
@@ -49,7 +49,7 @@ People who interact with your posts (replies, mentions, quotes), even if you don
 
 - **Type:** substantive = a question, a thought, a quote with context (about 6+ words); wow = emoji, "cool", "fire", short reactions. Decided by the majority of interactions.
 - **Status:** just active · worth a look · move to the core. "(auto)" marks the assistant's suggestion; once you set a status or a note, it is never overwritten.
-- "Move to the core" + your OK = the assistant creates a full card (the follower signal rule). Until then the person stays on this list and out of the queue.
+- "Move to the core" is a status on this list. When someone gets a full card is the single rule in CONFIG section 9. A person you do not follow stays on this list and out of the queue until you follow them or confirm a card.
 
 ## FOLLOWERS.md — every follower, one roster
 

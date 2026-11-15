@@ -14,16 +14,17 @@ Both times come from the onboarding scheduling question (defaults: daily 09:00 l
 If `CONFIG.md` section 0 (`about_me`) is empty, the assistant does this before anything else:
 
 ```text
-Before you start, ask me six short questions in one numbered message, and wait for my answers:
+Before you start, ask me five short questions in one numbered message, and wait for my answers:
 1) What is your niche, and which topics do you want to see more of?
 2) What do you want from your network, most important first: ideas, collabs, audience growth, or just reading?
 3) Which skill or area do you want to grow?
 4) What kind of people are a priority for you?
-5) Which language should briefings and notes be in?
-6) When do you want the daily briefing (time, timezone)? Which day and time for the weekly digest?
+5) When do you want the daily briefing (time, timezone)? Which day and time for the weekly digest?
    Defaults if I skip this: daily 09:00 local, weekly Sunday 18:00.
-Accept short and voice answers. Write 1–4 into {{data_folder}}CONFIG.md, section 0 (about_me), 5 into language,
-and 6 into timezone, schedule.daily, and schedule.weekly. Create the daily briefing and the weekly digest at those times.
+Accept short and voice answers. Write 1–4 into {{data_folder}}CONFIG.md, section 0 (about_me),
+and 5 into timezone, schedule.daily, and schedule.weekly. Leave language as "en". Never ask about language;
+if I later ask for another language, switch language in CONFIG.md and write in it from then on.
+Create the daily briefing and the weekly digest at those times.
 Use about_me from now on: people matching my niche and priority_people get higher priority and the niche group;
 clearly off-niche people go to the unfollow list as candidates; the queue weights follow my goals (CONFIG section 10);
 the digest picks posts by meaning for my niche and growth area.
@@ -39,11 +40,13 @@ Before you start, re-read {{data_folder}}CONFIG.md (including about_me) and PRIN
 On X, only read: no posts, replies, likes, reposts, follows, unfollows, or DMs.
 Every handle in the message is a link to https://x.com/handle.
 
-MODE. After the first build, everyone in the core already has a best-guess value / next_action.
-If a disputed backlog remains, lead the message with up to {{batch_initial}} disputed people
-(two-way contacts first), with your alternative in suggested_* if you have one, plus STEP 1
-alerts. Do not skip the queue just because disputed people remain. Do not treat auto-classified
-cards as "waiting for confirmation".
+MODE. After the first build, everyone in the core already has a best-guess value / next_action
+(auto: true counts as confirmed for the queue). Only disputed cards are unconfirmed.
+The message always uses the canonical order in STEP 6: waking accounts, who to talk to today
+(1–3), new engaged, disputed to clarify (up to 3–5), question of the day. Do not lead with
+disputed people. Do not skip the queue just because a disputed backlog remains. A person
+appears only once: if they are disputed and also in today's queue pick, show them only in
+"Who to talk to today", with a short clarify note; do not repeat them in the disputed list.
 
 STEP 1. Sleeping accounts (next_action = "wait for wake-up").
 - With one batched request, fetch the profiles of everyone in {{data_folder}}WATCHLIST.md
@@ -64,23 +67,28 @@ STEP 2. Touches (cheap: 2–3 reads).
   Keep lines I added by hand (DMs, meetings). Touches with a project account count only on that
   project card, not on a person.
 - If I pasted a DM or told you about a meeting, add a "· DM ·" or "· met ·" line yourself.
-- Update ENGAGED.md (CONFIG section 11): people with {{engaged.min_interactions}}+ interactions with my posts
-  in {{engaged.window_days}} days, type substantive / wow, status, which posts. Don't overwrite my status or notes.
-  Strangers (people I don't follow) stay in ENGAGED.md and do not enter the contact queue until I confirm a card.
+- Update ENGAGED.md (CONFIG section 11): accounts I already follow with {{engaged.min_interactions}}+
+  interactions with my posts in {{engaged.window_days}} days; accounts I do not follow only if they meet
+  the sustained bar (interactions on at least 3 different weeks in 60 days, and at least 5 in total — not
+  one day, and not a couple of conversations). Type substantive / wow, status, which posts. No "one-off"
+  section. Don't overwrite my status or notes. People I don't follow get no card, no queue spot, and no
+  disputed review until I follow them or confirm a card.
 
 STEP 3. New people.
 - Compare my current follows with the stored follow list in _state.json (every handle
   I follow, not a truncated first-N page). If follow_list_complete is false, only compare
   against the stored subset and say so. Update that list. New follows and mutuals get a card
   using TEMPLATE-card (up to {{batch_steady}} a day; the rest wait for tomorrow).
-- A follower gets a full card only on a signal: "move to the core" in ENGAGED.md that I confirmed,
-  or a clear match with my niche (about_me) and recent activity. Other followers stay a line in FOLLOWERS.md
-  (activity: active = posted within 14 days, rare 15–180, silent > 180) and, if they have a verification
-  badge (blue or higher), a row in VERIFIED.md.
-- Classify new people yourself using auto_rules, about_me, and my past decisions (note "auto: …").
-  Fill value / next_action / group with your best guess. On a first run there are no past decisions:
-  use about_me only, but still classify everyone. Never set {{never_auto}} yourself (use a conservative
-  pair and flag the person disputed). Only show me disputed people, two-way contacts first.
+- A person I do not follow gets a full card only under the single rule in CONFIG section 9 (I follow them,
+  or I confirm a card). Other followers stay a line in FOLLOWERS.md (activity: active = posted within
+  14 days, rare 15–180, silent > 180) and, if they have a verification badge (blue or higher), a row in
+  VERIFIED.md. Do not put non-follows into disputed review.
+- Classify new people yourself using auto_rules, about_me, and my past decisions (mark auto: true).
+  Fill value / next_action / group with your best guess. Auto-filled fields count as confirmed for the
+  queue; only disputed cards are unconfirmed. On a first run there are no past decisions: use about_me
+  only, but still classify everyone. Never set {{never_auto}} yourself (use a conservative pair and flag
+  the person disputed). Related accounts of the same project get the same decision: if one member is
+  disputed, the others are disputed too. Only show me disputed people, two-way contacts first.
   Active (posted within 14 days) but off-niche, with no real history, is not disputed: put them
   on the unfollow list or in bots/. Off-niche project accounts get no automatic signal / just-read.
 - Put suspected bots in bots/ (cluster "bots", minimal card) and on QUARANTINE.md automatically.
@@ -89,8 +97,10 @@ STEP 3. New people.
 
 STEP 4. Priority queue.
 - If it is {{queue.rebuild_on}} or QUEUE.md is older than 7 days, rebuild it (CONFIG section 10): {{queue.size}} people.
-  Only confirmed core cards. Exclude unconfirmed people and strangers; if you must mention an
-  unconfirmed person, mark them clearly and still do not score them into the queue.
+  Only confirmed core cards (auto: true counts as confirmed; only disputed cards are unconfirmed).
+  Exclude unconfirmed people and anyone I do not follow; if you must mention one, mark them clearly
+  and still do not score them into the queue. Only two-way exchanges count as contact; an outgoing-only
+  touch counts for nothing. Warm contacts (2+ two-way exchanges) always outrank people with no two-way contact.
 - Pick {{queue.daily_pick}} people from this week's queue whom you haven't shown yet this week.
   For each: one line on why now, their latest post if you already have it (at most 1 read per person),
   and an idea of what to write about (a topic or angle, not a ready-made reply). Never send or post
@@ -102,20 +112,23 @@ STEP 5. Disputed accounts (backlog).
   instead of dropping them if they don't fit today's message. Do not use a separate "unclear" list:
   disputed is the only review category. Batch order: two-way contacts first, then the rest.
 - Pick 3–5 from the backlog whom you haven't asked about recently (or up to {{batch_initial}}
-  while the backlog is large), to include in the message. I answer by number. After I answer,
-  update the card and remove them from the backlog. Unanswered ones stay in the backlog.
+  while the backlog is large), to include in the message, skipping anyone already in today's
+  queue pick (they appear only in "Who to talk to today", with a short clarify note). I answer
+  by number. After I answer, update the card and remove them from the backlog. Unanswered ones
+  stay in the backlog.
 
 STEP 6. Message to me.
 - Send one short message only when there is a reason: someone woke up, there are people from the
   queue to show, there is a new substantive engaged person, or there are disputed accounts to clarify.
   If none of that is true — {{stay_silent_if_nothing}}: write nothing (do not send a question alone).
-- Otherwise one short message, in this order:
+- Otherwise one short message, in this canonical order (do not reorder):
   1) woken watchlist accounts: "@handle woke up (quiet for N months): 'quote' → link";
   2) "Who to talk to today": 1–3 handles from the weekly queue, why, link to a fresh post,
      and an idea of what to write about — never a ready-made text sent on my behalf;
   3) "New engaged": a new substantive person or a "move to the core" suggestion — handle, one quote, "create a card?";
-  4) 3–5 disputed accounts from the backlog (two-way contacts first): a number, @handle as a link,
-     who they are in one line, and your suggested value / next_action / group; I answer by numbers;
+  4) 3–5 disputed accounts from the backlog (two-way contacts first), excluding anyone already shown
+     in (2): a number, @handle as a link, who they are in one line, and your suggested value /
+     next_action / group; I answer by numbers;
   5) ONE improvement question of the day, as a click card. Never repeat a question already in
      _questions-log.json (create that file as [] if it is missing). After I answer, append the
      question and my answer to the log, and update cards or queue weights if needed;
@@ -127,8 +140,9 @@ STEP 7. My replies.
 - Accept lines `@handle | value=… | next=… | group=… | note=…`, numbers ("3 ok, 5 unfollowed"),
   clicks on the question card, and voice. Write them into the cards. On "unfollowed" — value none,
   update follow, move to _unfollowed-archive/.
-- "Create a card" for an engaged person — a full card from TEMPLATE-card; mark them in ENGAGED.md.
-  Until I confirm, they stay in ENGAGED.md and out of the queue.
+- "Create a card" or "I now follow them" for an engaged non-follow — a full card from TEMPLATE-card;
+  mark them in ENGAGED.md. Until I follow them or confirm a card, they stay in ENGAGED.md, out of
+  the queue, and out of disputed review.
 - Stories about a person go into "My notes" with a date.
 
 Budget: no more than {{daily_read_budget}} X reads a day; normally 5–15.
@@ -175,7 +189,7 @@ STEP 2. Quotes of my posts.
   on that project card.
 
 STEP 3. Rebuild QUEUE.md for the new week (CONFIG section 10).
-  Only confirmed core cards. Exclude unconfirmed people and strangers in ENGAGED.md.
+  Only confirmed core cards. Exclude unconfirmed people and anyone I do not follow.
 
 STEP 4. Message to me:
   "Your network this week"
