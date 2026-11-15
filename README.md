@@ -1,13 +1,13 @@
 # xGrok network: People CRM for X
 
-**A personal card file of your network on X (Twitter), kept up to date by your AI assistant. Built for and tested with Grok Bot as the main agent.**
+**Manage your network on X (Twitter) as an asset: set your goals, raise the quality of your contacts, and optimize your network, with your AI assistant doing the daily work. Built for and tested with Grok Bot as the main agent.**
 You answer a few short questions, mostly with clicks. The assistant does the reading, sorting, and remembering. No code, read-only on X.
 
 ![Example xGrok network map](assets/network-map.png)
 
 ## Install in one sentence
 
-- **Easiest:** open the xGrok network bot template link (coming soon) and the new bot walks you through setup.
+- **Easiest:** copy the ready [xGrok network bot template](https://x.ai/bot/jqk8dGlu9TyhszeRIVORf) in one click, and the new bot walks you through setup.
 - **Or tell your Grok Bot:** "Install the skill from https://github.com/azkian1/xGrok-network and set up my network CRM."
 
 The bot reads [SKILL.md](SKILL.md), asks you a few questions (niche, goals, what to grow, priority people, when to send briefings), builds your base, and creates the routines. No copying files or prompts.
