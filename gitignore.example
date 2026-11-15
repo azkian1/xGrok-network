@@ -1,0 +1,17 @@
+# .gitignore for your PRIVATE People CRM base repo.
+# Copy this file into your base folder as ".gitignore".
+
+# Raw X downloads and working caches: can always be fetched again
+_raw/*
+!_raw/*.py
+_cache/
+*.json.gz
+
+# Backups and temp files
+*.bak*
+*.tmp
+.DS_Store
+
+# Never commit credentials
+.env
+*.token
