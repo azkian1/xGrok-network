@@ -182,3 +182,14 @@ Paste [routine-prompt.md](routine-prompt.md) to your assistant. It fills in the 
 **Can I change my goals later?** Yes. Say "let's redo the onboarding questions", and the queue and classification will follow your new answers.
 
 **Can I do this without a table?** Yes. Everything works in chat, with batches of 5 people and answers by number.
+
+## 9. Network map (on request)
+
+When the owner asks for a picture of their network (or a short video), follow [MAP.md](MAP.md). The assistant writes a `topics.json` from the owner's interests and card groups (2–4 supers, with subgroups), builds an anonymous `data.json` from the cards, and draws a round map: the owner in the centre, three rings for closeness, topics as sectors, and no lines between people. Handles never appear on the image.
+
+```text
+python3 map/build_data.py --cards /path/to/the/base --topics map/topics.json --out map/data.json --owner @their_handle
+python3 map/render.py --topics map/topics.json --data map/data.json --out network-map.png
+```
+
+Try the layout without a card folder using [map/topics.example.json](map/topics.example.json) and [map/data.example.json](map/data.example.json). Circles map to rings as described in MAP.md; rename them in `topics.json` if your CONFIG uses different names.

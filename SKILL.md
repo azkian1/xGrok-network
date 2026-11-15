@@ -17,7 +17,7 @@ You are setting up a personal CRM of the user's network on X for them. They shou
 
 ## 1. Get the kit files
 Fetch these files from this repository (the GitHub link the user gave you; by default https://github.com/azkian1/xGrok-network; raw files are at `https://raw.githubusercontent.com/<owner>/<repo>/main/<file>`) and save them to a kit folder on your computer:
-`SKILL.md`, `README.md`, `PRINCIPLES.md`, `SETUP.md`, `CONFIG.example.md`, `TEMPLATE-card.md`, `TEMPLATE-lists.md`, `routine-prompt.md`, `GITHUB.md`, `gitignore.example`, `LICENSE`.
+`SKILL.md`, `README.md`, `PRINCIPLES.md`, `SETUP.md`, `CONFIG.example.md`, `TEMPLATE-card.md`, `TEMPLATE-lists.md`, `routine-prompt.md`, `GITHUB.md`, `gitignore.example`, `LICENSE`, `MAP.md`, and the `map/` and `assets/` folders.
 If a raw fetch fails (404, empty, or blocked), clone the repo with git (`git clone <repo URL>`) and use the files from the clone; do not invent missing files.
 Read `PRINCIPLES.md`, `SETUP.md`, `CONFIG.example.md`, and `routine-prompt.md` in full before going on. Save this procedure as a skill if you can, so it survives future conversations.
 
@@ -51,3 +51,6 @@ Tell the user the saved times. They can change them any time ("move the briefing
 
 ## 6. Ongoing
 Every answer the user gives goes back into the cards, the queue, and the logs (`_review-log.json`, `_questions-log.json`) so nothing is asked twice. "Unfollowed" moves a card to `_unfollowed-archive/`, never deletes it.
+
+## 7. Network map (on request)
+If the owner asks for a picture or a short video of their network clusters, follow [MAP.md](MAP.md). Build it only from cards already in the base (no extra X reads). Write `topics.json` from *their* interests and card groups — never hard-code a niche. The still image is the default; a video only if they asked for one. The PNG has no handles. Do not put the owner's `topics.json` or `data.json` into the public kit.

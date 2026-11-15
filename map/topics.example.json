@@ -1,0 +1,36 @@
+{
+  "comment": "Example topic map. Copy this file to topics.json and edit it for the owner's interests. List 2-4 supers, each with subgroups, in the order they should appear around the disc (counter-clockwise from north). Adjacent list items share a border, so put crossover subgroups next to each other. Omit a color to have one assigned automatically. The groups and keywords fields are used by build_data.py to classify cards; the renderer only needs key and label.",
+  "title": "Inside my X network",
+  "supers": [
+    {
+      "key": "sports",
+      "label": "Sports",
+      "subgroups": [
+        {"key": "basketball", "label": "Basketball", "groups": ["basketball", "nba"], "keywords": ["basketball", "nba", "hoops"]},
+        {"key": "running", "label": "Running", "groups": ["running"], "keywords": ["running", "marathon", "track"]}
+      ]
+    },
+    {
+      "key": "music",
+      "label": "Music",
+      "subgroups": [
+        {"key": "jazz", "label": "Jazz", "groups": ["jazz"], "keywords": ["jazz", "saxophone", "improv"]},
+        {"key": "production", "label": "Production", "groups": ["production", "music-prod"], "keywords": ["producer", "studio", "beatmaking"]}
+      ]
+    },
+    {
+      "key": "making",
+      "label": "Making",
+      "subgroups": [
+        {"key": "woodwork", "label": "Woodwork", "groups": ["woodwork"], "keywords": ["woodwork", "cabinet", "carpentry"]},
+        {"key": "electronics", "label": "Electronics", "groups": ["electronics"], "keywords": ["electronics", "pcb", "soldering"]}
+      ]
+    }
+  ],
+  "unsorted": {"key": "other", "label": "Unsorted", "color": [125, 138, 165]},
+  "rings": {
+    "close": {"label": "Close", "circles": ["support", "friends"]},
+    "productive": {"label": "Productive", "circles": ["productivity", "work", "learning"]},
+    "around": {"label": "Around", "circles": ["development", "horizon"]}
+  }
+}
