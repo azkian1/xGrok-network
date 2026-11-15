@@ -7,43 +7,63 @@ These rules took shape while the kit was tried on a real account with ~350 follo
 **Why.** These are people you chose. "Everyone who ever liked a post" is noise.
 
 ## 2. The core and followers are kept separately
-**Decision.** Non-mutual followers are stored in a single file, `FOLLOWERS.md`: handle, a few words, activity. A full card appears only if the follower gave a signal: they replied, mentioned you, or reposted you, you followed them back, or they are clearly in your field.
-**Why.** Followers are almost always weak ties. If there are thousands of them, reviewing each one is impossible, and reading each timeline is very expensive. Future friends and partners among them can be found by a signal.
+**Decision.** Followers produce exactly three lists, not a card for each person:
+- `FOLLOWERS.md` — one roster of every follower (handle, a few words, activity). It is the counter used for "+N new, −M left" and for spotting mutuals.
+- `ENGAGED.md` — people who interact with your posts, whether you follow them or not. A full card appears only if you confirm it, or they already gave a clear signal (they replied, mentioned you, or reposted you, you followed them back, or they are clearly in your field).
+- `VERIFIED.md` — followers with an X verification badge, blue or higher (blue / X Premium, gold / business, gray / government), built from `verified` / `verified_type` on the same follower read.
+**Why.** Followers are almost always weak ties. If there are thousands of them, reviewing each one is impossible, and reading each timeline is very expensive. A roster, a list of people who actually talk to you, and a list of verified accounts are enough.
 
 ## 3. On X, read only
 **Decision.** The assistant does not post, like, follow, or unfollow. Only you unfollow.
 **Why.** This is your voice and your reputation. A bot's mistake on X is visible to everyone and cannot be undone.
 
 ## 4. Only a fresh slice
-**Decision.** For a card we take ~10 recent posts or 3–7 days, and we look up contact history with search. For large accounts, the bio and the latest post are enough.
+**Decision.** For a card we take ~10 recent posts or 3–7 days, and we look up contact history with search — at most 2 pages per person per direction. For large accounts, the bio and the latest post are enough.
 **Why.** Otherwise the daily X limits burn through on the first few dozen people. A fresh slice is enough to understand who they are and what they are doing now.
 
-## 5. The bot fills in the objective, the person fills in the subjective
-**Decision.** The assistant writes the profile, the history, and the overlaps. You set the value, the next step, and the notes.
-**Why.** A person's value lives in your head, and you cannot guess it from their feed. In return, the assistant invents nothing: if there is little data, it says so.
+## 5. The bot fills in the objective, and a best guess for the rest
+**Decision.** The assistant writes the profile, the history, the overlaps, and its best guess for value, next step, and group. You only step in to clarify disputed people, and to write notes.
+**Why.** A first build that leaves most cards empty waiting for confirmation is too slow. The assistant can classify the obvious cases well enough; you correct the ones that actually need a person.
 
 ## 6. Click, don't type
-**Decision.** Values are chosen from fixed lists, and each value has a default next step. The assistant writes its suggestion into separate fields (`suggested_value`, `suggested_next`, `suggested_group`) and leaves `value` and `next_action` empty until you confirm or correct it. Auto-rules may fill `value` and `next_action` themselves for obvious cases (official accounts, long-silent accounts, close look-alikes). Review mode is the set of cards whose suggestions are not yet confirmed. Answers are accepted in any form: by number, by voice, or as ready-made lines from the table.
-**Why.** After a few dozen people, answers start to repeat. The list and the default values turn the review into 2–3 minutes a day. Keeping the suggestion separate from the confirmed value means a first run does not pretend the owner has already decided.
+**Decision.** Values are chosen from fixed lists, and each value has a default next step. On the first build the assistant fills `value` and `next_action` for everyone with its best guess and marks the card `auto: …`. When it later shows a disputed person, it may put an alternative in `suggested_value` / `suggested_next` / `suggested_group` for you to click. Answers are accepted in any form: by number, by voice, or as ready-made lines from the table.
+**Why.** After a few dozen people, answers start to repeat. The list and the default values turn a clarification into 2–3 minutes a day.
 
 ## 7. Auto-classification; the person only sees disputed cases
-**Decision.** The assistant classifies the obvious cases itself: official accounts, long-quiet accounts, and (once you have classified similar people) look-alikes. It only shows you the disputed ones. It never sets close relationships, collabs, or DMs itself. On a first run there are no past decisions, so it relies on the `about_me` niche rules only. A single tag, mention, or one reply is not enough to mark someone disputed; disputed means 2+ two-way touches, a strong conflict between niche fit and activity, or someone off-niche who still has a real history with you.
-**Why.** On a real run, more than half of the core was classified automatically, and only ~20 disputed cases out of ~190 were left for manual review. Treating any contact as disputed sent too many people to the owner, some over a single tag. Decisions about people you talk to stay with you.
+**Decision.** The assistant classifies everyone automatically in the background, including on the first run. It fills `value`, `next_action`, and `group` with its best guess (noted `auto: …`). It never sets close relationships, collabs, or DMs itself: for those it uses a conservative pair and flags the person as disputed, optionally putting the stronger guess in the suggested fields. It only shows you the disputed ones, later, in small batches, with two-way contacts first.
+
+A person is **disputed** only when the classification is genuinely uncertain or the relationship decision belongs to you:
+- 2 or more two-way touches (replies in both directions, or a conversation);
+- off-niche, but with a real history (2+ two-way touches, a DM you pasted, or notes that you know them);
+- two auto-rules disagree, or the person may be someone you know.
+
+These are **not** disputed:
+- a single tag, mention, or one reply, and nothing else;
+- active (posted within 14 days, the same threshold as in `FOLLOWERS.md`) but off-niche, with no real history — those go to the unfollow list, or to `bots/` if they look like a farm.
+
+On a first run there are no past decisions, so it relies on the `about_me` niche rules only — but it still classifies everyone, it does not leave niche matches waiting as suggestions.
+**Why.** Leaving most of the core empty for a daily review was too slow. Disputed people are few, and decisions about people you talk to stay with you.
 
 ## 8. Project accounts are a special type
-**Decision.** Official accounts of companies, products, and media (for example, @github) always get signal and "just read". A collab is never proposed to them.
-**Why.** These are not people: their updates are useful to read, and there is no need to befriend them. There are many such accounts, and they are easy to recognize from the bio.
+**Decision.** Official accounts of companies, products, and media (for example, @github) that match your interests get signal and "just read". A collab is never proposed to them. Official accounts that do **not** match your interests get no automatic signal / just-read: they go to the unfollow list as candidates. Touches with a project account are logged only on that project card, not on a person.
+**Why.** These are not people: useful updates are worth reading, and there is no need to befriend them. Accounts you followed for a topic you no longer care about should be easy to prune. Replies to a project account belong on that account's card.
 
-## 9. Quarantine before unfollowing
-**Decision.** The assistant puts dead and useless accounts into "quarantine" and shows them as a single list; you decide. If nobody is quieter than `silent_after_days`, it still shows the quietest N, says so in one line, and suggests quarantine only for accounts that also pass a lower soft threshold and are off-niche; the rest are "keep". After an unfollow, the card goes to the archive instead of being deleted.
-**Why.** "Quiet" does not always mean "useless", and that became clear on the very first run. A hard threshold with no fallback left the first cleanup list empty even when some accounts were nearly a year quiet. The archive keeps a memory of who they were.
+## 9. Quarantine is the unfollow list
+**Decision.** `QUARANTINE.md` is the unfollow list. The assistant puts only real candidates there and shows them as a single list; you decide. Candidates are:
+- long-AFK accounts (silent longer than `silent_after_days`; if nobody reaches that, the fallback is `silent_soft_days`);
+- suspected bots (also stored in `bots/`, one cluster named "bots", with a minimal card: handle, why suspected, follower count, last post) — bots go on this list automatically;
+- people who no longer match your interests;
+- project accounts that do not match your interests.
+
+If there are no candidates, the assistant says so. It does not pad the list with the quietest accounts or "keep" rows. After an unfollow, the card goes to the archive instead of being deleted. Appearing on this list counts as "shown" in `_review-log.json`.
+**Why.** "Quiet" does not always mean "useless", and a padded list of mostly-active people is noise. The archive keeps a memory of who they were.
 
 ## 10. "Wait for wake-up" is not quarantine
 **Decision.** A separate category for sleeping accounts, kept in `WATCHLIST.md`. These are accounts that are quiet now, but if they start posting, something is happening in the field. Every morning they are checked with one batched profile request, using the id of the latest post. If several wake up at once, that is a signal of its own.
 **Why.** The most useful finding of the project. Such accounts are easy to unfollow by mistake, and their return is an early indicator. The check is almost free.
 
 ## 11. Stay silent if there is nothing to say
-**Decision.** In steady mode the assistant writes only if there is a reason: a watchlist account woke up, people from this week's queue, a new substantive engaged person, or unclear accounts to clarify. One improvement question of the day is attached to that message, not sent alone.
+**Decision.** In steady mode the assistant writes only if there is a reason: a watchlist account woke up, people from this week's queue, a new substantive engaged person, or disputed accounts to clarify. One improvement question of the day is attached to that message, not sent alone.
 **Why.** A daily empty briefing quickly becomes noise, and people stop reading it.
 
 ## 12. Every handle is a link
@@ -55,23 +75,23 @@ These rules took shape while the kit was tried on a real account with ~350 follo
 **Why.** Who matters depends on what you are doing. If you make indie games, people who post quality work in that niche matter more than the biggest accounts in tech. Without goals, the assistant can only guess from follower counts. Briefings should arrive when the owner actually has time to look at them.
 
 ## 14. One touch history, filled from your side
-**Decision.** Each card has one living Touch history section and a derived `last_touch` date. New touches come from reading your own new posts and mentions (2–3 reads a day), not from each person's timeline. DMs only if you paste them.
+**Decision.** Each card has one living Touch history section and a derived `last_touch` date. New touches come from reading your own new posts and mentions (2–3 reads a day), not from each person's timeline. Lookups of past contact are limited to 2 pages per person per direction. Touches with a project account count only on that project card. DMs only if you paste them.
 **Why.** "When did we last talk" is the most useful field for keeping relationships alive, and reading it from your own side costs almost nothing.
 
 ## 15. A short weekly queue instead of "N new people a day"
-**Decision.** Once the core is reviewed, the daily batch is replaced by a weekly queue of 7–10 people worth engaging with, scored by value, next step, niche, your notes, and days since the last touch (every day-range is covered, with no gaps). Each of your goals adds its own bonus, scaled by the order you gave them — not only by which goal comes first. In review mode, scoring uses the suggested fields until you confirm. Each morning shows 1–3, with why and an idea of what to write about. The assistant never sends ready-made text on the owner's behalf. The assistant suggests; you talk.
-**Why.** After the review there is nothing left to classify, but there are always people you meant to reply to and forgot. A short rotating list keeps that manageable.
+**Decision.** Once the first build has classified the core, a weekly queue of 7–10 people worth engaging with is scored by value, next step, niche, your notes, two-way (warm) contact, and days since the last touch (every day-range is covered, with no gaps). Each of your goals adds its own bonus, scaled by the order you gave them — including a bonus for the support goal. The ideas goal must not add `value.ideas` again (that score already lives in `value`). Warm contacts (2+ two-way touches) always outrank strangers. Strangers and other people without a confirmed core card stay out of the queue (they live in `ENGAGED.md` until you confirm a card). If an unconfirmed person has to be mentioned at all, they get a clear marker and are still not scored into the queue. The assistant never sends ready-made text on the owner's behalf. The assistant suggests; you talk. Each morning shows 1–3, with why and an idea of what to write about.
+**Why.** After the first build there is little left to classify, but there are always people you meant to reply to and forgot. A short rotating list keeps that manageable, and it should surface people you already talk to before people you do not know.
 
 ## 16. Engaged people are a separate light layer
-**Decision.** People who interact with your posts (even if you don't follow them) go to `ENGAGED.md`, split into substantive and wow. The best substantive ones are suggested for a full card. This is the same "signal" that promotes a follower; there is no second rule.
-**Why.** New good contacts often come to you first. Splitting substance from applause shows who is worth a look without reviewing every reply.
+**Decision.** People who interact with your posts (even if you don't follow them) go to `ENGAGED.md`, split into substantive and wow. Strangers — people you don't follow who engage — stay in that list for you to review. They do not enter the contact queue until you confirm a card. The best substantive ones are suggested for a full card. This is the same "signal" that promotes a follower; there is no second rule.
+**Why.** New good contacts often come to you first. Splitting substance from applause shows who is worth a look without reviewing every reply or bloating the queue with strangers.
 
 ## 17. A weekly digest, not a daily feed
-**Decision.** Strong posts from priority people go to the weekly digest, not the morning briefing. Once a week: a data refresh, those posts, sleeping accounts that woke up, top engaged, next week's queue, and 3–5 improvement questions. Built from batched lookups that include the latest post.
+**Decision.** Strong posts from priority people go to the weekly digest, not the morning briefing. Once a week: a data refresh, those posts, sleeping accounts that woke up, top engaged, next week's queue, and 3–5 improvement questions. The same weekly follower read also rebuilds `FOLLOWERS.md` and `VERIFIED.md`. Built from batched lookups that include the latest post.
 **Why.** The point of the card file is that good posts from chosen people don't get lost. Weekly is enough, and batched lookups keep it cheap. The morning stays a short action list, not a feed.
 
 ## 18. Keep improving with small questions
-**Decision.** The daily briefing carries at most one question of the day; the weekly digest ends with 3–5. Both are click cards built from real data (who was useful, who to raise, who could be a partner, unclear accounts, occasionally goals). Asked questions are logged and never repeated.
+**Decision.** The daily briefing carries at most one question of the day; the weekly digest ends with 3–5. Both are click cards built from real data (who was useful, who to raise, who could be a partner, disputed accounts, occasionally goals). Asked questions are logged and never repeated.
 **Why.** A base built once goes stale. Tiny, regular corrections keep it aligned with what the owner actually values, without a big review session.
 
 ## Next (roadmap)

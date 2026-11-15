@@ -32,36 +32,39 @@ People CRM is a set of plain Markdown files: rules, templates, and prompts. You 
 
 ## What you get
 
-- **Daily briefing.** One short message, and only when there is a reason to send one. It lists sleeping accounts that woke up, 1–3 people worth talking to today along with an idea of what to say, new engaged people, a few unclear accounts to sort, and one question of the day. If nothing is new, there is no message.
+- **Daily briefing.** One short message, and only when there is a reason to send one. It lists sleeping accounts that woke up, 1–3 people worth talking to today along with an idea of what to say, new engaged people, a few disputed accounts to sort, and one question of the day. If nothing is new, there is no message.
 - **Weekly digest with improvement questions.** The strongest posts from your priority people, sleeping accounts that woke up, top engaged people, and next week's queue. It ends with 3–5 click-to-answer questions that sharpen the base over time.
-- **Weekly data refresh.** Follows, followers, bios, follower counts, and activity are re-read in cheap batches, and changes are reported in one line.
-- **Cleanup and quarantine.** Dead and useless follows go into a quarantine list. You unfollow from that list yourself, and the cards are archived, not deleted.
+- **Weekly data refresh.** Follows, followers, bios, follower counts, and activity are re-read in cheap batches, and changes are reported in one line. The same follower read also rebuilds the follower roster and the verified-followers list.
+- **Three follower lists.** A roster of every follower (`FOLLOWERS.md`), people who interact with you even if they don't follow you (`ENGAGED.md`), and followers with an X verification badge (`VERIFIED.md`). No card for every follower.
+- **Cleanup and the unfollow list.** Long-AFK accounts, bots, people who no longer match your interests, and off-niche project accounts go into `QUARANTINE.md`. You unfollow from that list yourself, and the cards are archived, not deleted. If there are no candidates, the assistant says so.
 - **Watchlist of sleeping accounts.** Quiet accounts whose return would be news, like a former opinion leader, a paused project, or an old competitor, get checked every day with one batched request.
-- **Engaged layer.** People who reply to or quote you, split into "substantive" and "wow". The best ones get suggested for a full card.
 - **Touch history.** Every reply, quote, mention, and (if you paste it in) DM between you and a person is logged on their card, along with a `last_touch` date.
-- **Priority queue.** A short weekly list of people worth engaging with, scored by why they matter to you, your goals, and how long it has been since you last talked.
+- **Priority queue.** A short weekly list of people worth engaging with, scored by why they matter to you, your goals, two-way contact, and how long it has been since you last talked. Strangers stay in the engaged list until you confirm a card.
 
 ## How it works
 
 ```mermaid
 flowchart LR
     X["X / Twitter<br/>(read-only)"] --> A["AI assistant"]
-    A --> C["Cards<br/>one file per person"]
+    A --> C["Cards<br/>one file per person you follow"]
+    A --> L["Three follower lists<br/>roster, engaged, verified"]
+    A --> Q["Unfollow list"]
     C --> D["Daily briefing"]
     C --> W["Weekly digest<br/>+ data refresh"]
+    L --> W
     D --> Y["You answer<br/>clicks, numbers, voice"]
     W --> Y
     Y --> C
 ```
 
-The assistant reads X, writes and updates the cards, and builds the briefings from them. Each answer you give goes back into the cards, so the next briefing is a little better.
+The assistant reads X, writes a card for everyone you follow, classifies them automatically, and builds the briefings from the cards. Followers go into three lists, not into individual cards. Each answer you give goes back into the cards, so the next briefing is a little better.
 
 ## Manual setup (any AI assistant)
 
 1. **Get the kit.** Copy `CONFIG.example.md` to `CONFIG.md` and fill in your X handle. Everything else has sensible defaults.
 2. **Start the setup.** Open a chat with your assistant, attach the kit files (or link to this repo), and paste the setup prompt from [SETUP.md](SETUP.md#4-setup-prompt).
 3. **Answer the onboarding questions.** The assistant asks six short questions: your niche, your goals for your network (ideas, collabs, audience, or just reading), what you want to grow, which people matter most, the language, and **when you want your briefings** (daily time and timezone, weekly day and time; defaults are 09:00 daily and Sunday 18:00).
-4. **Sort only the unclear cases.** The assistant creates cards for everyone you follow and sorts the obvious cases on its own (official accounts, long-silent accounts, look-alikes). You only see the unclear ones, in batches, and answer in a few words or clicks. Suggestions sit in separate fields until you confirm them. You also get one list of long-quiet accounts to clean up (if nobody crosses the hard silence threshold, you still see the quietest ones).
+4. **The assistant classifies everyone in the background.** It fills in a best guess for each card. You then get one unfollow list of real candidates only (long-AFK, bots, off-interest people and projects). After that you only see disputed people, in small batches, and answer in a few words or clicks.
 5. **Turn on the routines.** Paste [routine-prompt.md](routine-prompt.md). The assistant creates the daily briefing and the weekly digest at the times you chose.
 6. *(Optional)* **Put the base on GitHub and open it in Obsidian.** See [Your base on GitHub and in Obsidian](#your-base-on-github-and-in-obsidian) below.
 
@@ -77,9 +80,9 @@ Good morning
       Idea: ask how they cut the onboarding to one screen
    2. @former_colleague: you noted "worked together on the launch", never touched on X
 🙋 New engaged: @thoughtful_reader, 3 substantive replies this month. Create a card?
-❓ Unclear, answer by number:
-   1. @some_account: design tools newsletter → suggest: ideas / just read
-   2. @another_one: no posts in 9 months → suggest: quarantine
+❓ Disputed, answer by number:
+   1. @some_account: two-way replies, design tools — suggest: ideas / just read
+   2. @another_one: off-niche, but you have a DM history — suggest: vibes / just read
 🃏 Question of the day: Which of these three topics should rank higher next week? [A] [B] [C]
 ```
 
@@ -113,8 +116,8 @@ Keep the repository private: the cards contain personal notes about real people.
 | [SKILL.md](SKILL.md) | The installable skill: what a Grok Bot does when you say "install this" |
 | [SETUP.md](SETUP.md) | Step-by-step setup, the onboarding questions, the setup prompt, rate-limit rules, FAQ |
 | [CONFIG.example.md](CONFIG.example.md) | All settings in one place: about you, schedule, values, next steps, groups, auto-rules, queue, engaged, digest |
-| [TEMPLATE-card.md](TEMPLATE-card.md) | The person card template, with a legend for every field |
-| [TEMPLATE-lists.md](TEMPLATE-lists.md) | What the weekly queue (`QUEUE.md`) and the engaged list (`ENGAGED.md`) look like |
+| [TEMPLATE-card.md](TEMPLATE-card.md) | The person card template, a minimal bot card, and a legend for every field |
+| [TEMPLATE-lists.md](TEMPLATE-lists.md) | What `QUEUE.md`, `ENGAGED.md`, `FOLLOWERS.md`, `VERIFIED.md`, and `QUARANTINE.md` look like |
 | [routine-prompt.md](routine-prompt.md) | Onboarding, the daily briefing routine, and the weekly digest (with the data refresh and improvement questions) |
 | [PRINCIPLES.md](PRINCIPLES.md) | The design decisions and the reasons behind them |
 | [GITHUB.md](GITHUB.md) | Keeping your base in a private GitHub repo and growing it with pull requests |
@@ -127,14 +130,15 @@ The assistant builds your base (in a separate folder) from these templates:
 |---|---|
 | `@handle.md` | One card per person you follow |
 | `INDEX.md` | One line per card: handle, group, value, next step |
-| `FOLLOWERS.md` | Followers you don't follow back, one line each |
-| `QUARANTINE.md` | Candidates to unfollow, with reasons |
+| `FOLLOWERS.md` | Every follower, one roster line each (the +N/−M counter and mutuals) |
+| `ENGAGED.md` | People who engage with your posts, follower or not |
+| `VERIFIED.md` | Followers with an X verification badge (blue or higher) |
+| `QUARANTINE.md` | The unfollow list: long-AFK, bots, off-interest people and projects |
 | `WATCHLIST.md` | Sleeping accounts and the ID of their latest post |
-| `QUEUE.md` | This week's priority queue |
-| `ENGAGED.md` | People who engage with your posts |
-| `bots/`, `_unfollowed-archive/` | Likely bots, and cards for accounts you unfollowed |
+| `QUEUE.md` | This week's priority queue (confirmed core cards only) |
+| `bots/`, `_unfollowed-archive/` | Suspected bots (cluster "bots", minimal cards), and cards for accounts you unfollowed |
 | `_review-log.json`, `_questions-log.json` | Who and what has already been asked, so nothing repeats |
-| `_state.json` | since_ids, last run, reads used, and the full stored follow list |
+| `_state.json` | since_ids, last run, reads used, the stored follow list, and `follow_list_complete` |
 | `_anchors.json` | latest post ids for the watchlist and the weekly digest |
 | `_build-log.md` | the first-build log (reads, timing, counts) |
 

@@ -38,12 +38,16 @@ Ask, in this order, and accept short or voice answers:
 Create the base folder, copy `CONFIG.example.md` to `CONFIG.md` there, and write the answers in (about_me, language, timezone, schedule.daily, schedule.weekly). Tell the user in one line that the first build runs in the background and takes 20-60 minutes.
 
 ## 4. First build
-Follow the setup prompt in `SETUP.md` section 4 step by step (cards for everyone they follow, FOLLOWERS.md, touch history, bots, auto-classification, WATCHLIST, QUARANTINE, ENGAGED, the first QUEUE), within the rate-limit rules of `SETUP.md` section 6 and `daily_read_budget`. Persist the complete follow list in `_state.json` (every handle they follow, not a truncated first-N page). Then show the longest-quiet accounts as one cleanup list: if nobody reaches `silent_after_days`, still show the quietest N (see CONFIG). After that, only the unclear cases, in small batches. Write your suggestion in `suggested_value` / `suggested_next` / `suggested_group` and leave `value` / `next_action` empty until the owner confirms, except obvious auto-rule cases.
+Follow the setup prompt in `SETUP.md` section 4 step by step (cards for everyone they follow, FOLLOWERS.md, VERIFIED.md, touch history, bots, auto-classification of everyone, WATCHLIST, QUARANTINE, ENGAGED, the first QUEUE), within the rate-limit rules of `SETUP.md` section 6 and `daily_read_budget`.
+
+Persist the follow list in `_state.json` (every handle they follow, not a truncated first-N page) and set `follow_list_complete: true`. For a capped or test run, set `follow_list_complete: false`; the daily new-follow check then compares only against the stored subset and must say so.
+
+Classify everyone automatically in the background: fill `value` / `next_action` / `group` with your best guess and mark `auto: …`. Do not leave the core waiting for confirmation. Then show the unfollow list (`QUARANTINE.md`): only real candidates (long-AFK accounts, bots, people or project accounts that no longer match the owner's interests). If there are none, say so; do not pad the list. Log everyone on that list as shown in `_review-log.json`. After that, only genuinely disputed people, in small batches, two-way contacts first.
 
 ## 5. Routines
 Create two scheduled routines at the times the user chose, using the prompts in `routine-prompt.md`:
 - **Daily briefing** (section 1): one short message only when there is a reason.
-- **Weekly digest** (section 2): the weekly data refresh, the digest, and 3-5 clickable improvement questions.
+- **Weekly digest** (section 2): the weekly data refresh, the digest, and 3-5 clickable improvement questions. The same weekly follower read also rebuilds `FOLLOWERS.md` and `VERIFIED.md`.
 Tell the user the saved times. They can change them any time ("move the briefing to 8:00").
 
 ## 6. Ongoing

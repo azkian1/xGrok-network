@@ -23,8 +23,8 @@ about_me:
 The scheduling question — "When do you want the daily briefing (time, timezone)? Which day and time for the weekly digest?" — is stored in section 1 as `timezone`, `schedule.daily`, and `schedule.weekly`. Defaults if you skip it: daily 09:00 local, weekly Sunday 18:00. Routines are created with those times.
 
 How the assistant uses this:
-- **Classification.** A person whose posts match `niche` / `topics` gets suggested value `ideas` or `signal` and the group for that niche. Matching `not_interested` lowers priority (never auto-quarantine just for that). On a first run there are no past decisions: use these niche rules only.
-- **Priority queue.** People in your niche get a bonus (see section 10). Each goal in `goals` adds its own `goal_bonus`, scaled by position (first = full weight, later ones less) — not only the goal that comes first. If `reading` is among the goals, the queue stays shorter and the digest matters more.
+- **Classification.** A person whose posts match `niche` / `topics` gets value `ideas` or `signal` (filled in automatically, noted `auto: …`) and the group for that niche. Clearly off-niche people, or people matching `not_interested`, go to the unfollow list as candidates (you still decide). On a first run there are no past decisions: use these niche rules only, but still classify everyone.
+- **Priority queue.** People in your niche get a bonus (see section 10). Each goal in `goals` adds its own `goal_bonus`, scaled by position (first = full weight, later ones less) — not only the goal that comes first. The ideas goal does not add `value.ideas` again. If `reading` is among the goals, the queue stays shorter and the digest matters more.
 - **Digest.** Strong posts are picked "by meaning for you": `niche`, `topics`, and `grow` come first, likes and bookmarks are only a hint.
 - Re-answer any time: say "let's redo the onboarding questions".
 
@@ -45,16 +45,17 @@ data_folder: "people/"             # where the assistant stores the cards
 ## 2. Batch sizes and limits
 
 ```yaml
-batch_initial: 10          # how many people a day while the core is still being reviewed
+batch_initial: 10          # how many disputed people a day while the disputed backlog is being cleared
 batch_steady: 5            # max new people a day in steady mode (new follows only; the daily "who to talk to" comes from the queue)
-first_cleanup_batch: 30    # first "long quiet" batch for cleanup
-silent_after_days: 365     # quiet longer than this → a quarantine candidate
-silent_soft_days: 180      # if nobody reaches silent_after_days, still show the quietest N; suggest quarantine only if also off-niche
+first_cleanup_batch: 30    # max unfollow candidates to show in one list (never pad with non-candidates)
+silent_after_days: 365     # quiet longer than this → a unfollow candidate
+silent_soft_days: 180      # fallback AFK threshold if nobody reaches silent_after_days
 fresh_slice_posts: 10      # how many recent posts to read for a card
 fresh_slice_days: "3-7"    # or how many days (fewer for active accounts)
 big_account_followers: 50000   # for large accounts, the bio and the latest post are enough
 daily_read_budget: 1000    # daily read limit of your X access (set your own)
 stay_silent_if_nothing: true   # don't write if nothing is new
+touch_history_max_pages: 2 # max search pages per person per direction (you → them, them → you)
 ```
 
 ## 3. Circles (circle): how close someone is
@@ -97,7 +98,7 @@ next_actions:
 
 ## 6. Default pairs value → next_action
 
-The assistant writes a suggested pair in `suggested_value` / `suggested_next` / `suggested_group` and leaves `value` / `next_action` empty until you confirm or correct it. Auto-rules may fill `value` / `next_action` themselves for obvious cases (project accounts, long-silent, wait for wake-up, close look-alikes) and mark the card `auto: …`.
+On the first build the assistant fills `value` / `next_action` / `group` for everyone with its best guess and marks the card `auto: …`. When it later shows a disputed person, it may put an alternative in `suggested_value` / `suggested_next` / `suggested_group` for you to click.
 
 ```yaml
 defaults:
@@ -122,6 +123,7 @@ groups:
   - "{{my community / course / club}}"
   - "project account"      # utility group, see the rules below
   - "for the algorithm"    # you follow them so the feed shows a topic you care about
+  - "bots"                 # suspected bots and spam farms; stored in bots/, also on the unfollow list
 
 # niche examples (uncomment the ones that fit you):
 #  design:     "UI/UX", "illustration", "design tools", "art directors"
@@ -138,26 +140,42 @@ groups:
 
 ## 8. Auto-classification rules
 
-The assistant applies these itself. It only shows the person the disputed cases.
+The assistant classifies everyone automatically in the background, including on the first run. It only shows you the disputed cases, later, in small batches.
 
 ```yaml
 auto_rules:
+  classify_everyone: true   # fill value / next_action / group with a best guess; mark "auto: …"
+  first_run: "no past decisions yet; use about_me niche / topics / not_interested only, but still classify everyone"
+
   project_accounts:
     # official accounts of companies, products, platforms, media (example: @github)
     detect: "the bio has 'official', 'we', a product or company name, a product link, and no personal name"
-    set: { value: signal, next_action: just read, group: "project account" }
+    if_matches_interests: { value: signal, next_action: just read, group: "project account" }
+    if_off_niche: { next_action: quarantine, group: "project account" }  # unfollow-list candidate; no automatic signal / just-read
     never: [collab, "propose a collab", "send a DM"]
+    touches: "log only on the project card, not on a person"
 
   silent_long:
-    # quiet longer than silent_after_days
+    # long-AFK accounts become unfollow candidates
     set: { next_action: quarantine }
-    show_as: "as a single list for confirmation, not one by one"
-    exception: "if their return would be news (see watch_for_wakeup), suggest 'wait for wake-up'"
-    if_none_reach_threshold:
-      show: "the first_cleanup_batch quietest anyway"
-      suggest_quarantine_if: "quiet >= silent_soft_days AND off-niche"
-      otherwise: keep
-      tell_owner: "one line: nobody reached silent_after_days; this is the quietest N, quarantine only if also off-niche"
+    show_as: "as a single unfollow list for confirmation, not one by one"
+    threshold: "quiet longer than silent_after_days"
+    fallback_threshold: "if nobody reaches silent_after_days, use silent_soft_days"
+    exception: "if their return would be news (see watch_for_wakeup), suggest 'wait for wake-up' instead"
+    if_none: "say so; do not pad the list with the quietest accounts or 'keep' rows"
+    log_as_shown: true      # appearing on the unfollow list counts as shown in _review-log.json
+
+  off_interest:
+    # people or project accounts that no longer match about_me.niche / topics, or that match not_interested
+    set: { next_action: quarantine }
+    not_disputed: true      # this is a cleanup candidate, not a disputed person
+
+  bots:
+    detect: "template replies, very high posting volume, shilling, clickbait hooks, mutual engagement pods (see a farm-detector if you have one)"
+    store: "bots/ (one cluster named bots)"
+    card: "minimal: handle, why suspected, follower count, last post"
+    set: { group: "bots", next_action: quarantine }  # automatically on the unfollow list
+    always_a_guess: true
 
   watch_for_wakeup:
     # sleeping accounts: they are quiet, but their return is a signal in itself (kept in WATCHLIST.md)
@@ -171,28 +189,38 @@ auto_rules:
   by_past_decisions:
     # if similar people have already been classified by you, use the same values
     # On a first run there are no past decisions: skip this rule and classify from about_me only.
-    first_run: "no past decisions yet; use about_me niche / topics / not_interested only"
+    first_run: "no past decisions yet; use about_me only, but still classify everyone"
     confidence: high_only
     note_prefix: "auto: "
 
   never_auto:
-    # the assistant never sets these itself
+    # the assistant never sets these itself; use a conservative pair (ideas or signal / just read) and flag the person disputed; the stronger guess may go in suggested_*
     values: [collab, support]
     next_actions: ["send a DM", "propose a collab", "unfollowed"]
-    disputed_if:
-      - "2 or more two-way touches (replies in both directions, or a conversation)"
-      - "a strong conflict between niche fit and activity (in-niche but long-silent, or very active but clearly off-niche)"
-      - "off-niche, but with a real history (2+ two-way touches, a DM you pasted, or notes that you know them)"
-    not_disputed_if: "a single tag, mention, or one reply, and nothing else"
+
+  disputed_if:
+    - "2 or more two-way touches (replies in both directions, or a conversation)"
+    - "off-niche, but with a real history (2+ two-way touches, a DM you pasted, or notes that you know them)"
+    - "two auto-rules disagree, or the person may be someone you know"
+  not_disputed_if:
+    - "a single tag, mention, or one reply, and nothing else"
+    - "active (posted within 14 days) but off-niche, with no real history — unfollow list or bots/, not disputed"
+  batch_order: "two-way contact first, then the rest"
 ```
 
-For obvious auto-rule cases, the assistant fills `value` / `next_action` (and `group` when the rule sets one) and notes `auto: …`. For everyone else it writes `suggested_value`, `suggested_next`, and `suggested_group` on the card and leaves `value` / `next_action` empty until you confirm. Review mode is those unconfirmed cards.
+"Active" here means posted within 14 days, the same threshold as in section 9. Do not use a separate "very active" label. High-volume off-niche accounts with no real history go to the unfollow list, or to `bots/` if they look like a farm — not to the disputed backlog.
 
-## 9. Followers
+## 9. Followers: three lists
+
+Followers do not each get a card. They produce exactly three lists.
 
 ```yaml
 followers:
-  mode: "one_list"            # a single FOLLOWERS.md file, no cards
+  lists:
+    - FOLLOWERS.md        # the roster and the counter: every follower, one line
+    - ENGAGED.md          # people who interact with your posts, follower or not (section 11)
+    - VERIFIED.md         # followers with an X verification badge, blue or higher
+  mode: "one_list"            # FOLLOWERS.md is a single roster, no cards
   line: "@handle — a few words from the bio — active|rare|silent"
   activity:                   # from the latest-post date on the profile, no timeline
     active: "<= 14 days"
@@ -204,7 +232,21 @@ followers:
     - "you followed them back"
     - "they are clearly in your field ({{your field}}) and active"
   bulk_review: "once a month, by eye, as a batch"
+  refresh: "weekly, with the follower reconciliation in the digest"
+
+verified:
+  file: VERIFIED.md
+  who: "followers with an X verification badge, blue or higher"
+  badges:
+    blue: "X Premium / blue check (verified is true, verified_type is empty or blue)"
+    gold: "business (verified_type is Business)"
+    gray: "government (verified_type is Government)"
+  source: "the verified and verified_type fields on the follower profile, from the same weekly follower read — no extra timeline reads"
+  refresh: "weekly, with the follower reconciliation"
+  columns: ["handle (link to https://x.com/<handle>)", "badge type", "followers count", "follows back / mutual", "short bio"]
 ```
+
+`FOLLOWERS.md` is the counter used for "+N new, −M left" and for spotting mutuals. `ENGAGED.md` is separate and includes people who interact with you even if they don't follow you. `VERIFIED.md` is only followers with a badge.
 
 ## 10. Priority queue: who to engage with this week
 
@@ -216,15 +258,17 @@ queue:
   daily_pick: 3                # how many from the queue per morning (1–3)
   rebuild_on: "monday"
   exclude_next_actions: ["do nothing", "quarantine", "unfollowed", "wait for wake-up"]
-  exclude_groups: ["project account"]
+  exclude_groups: ["project account", "bots"]
+  exclude_unconfirmed: true    # no confirmed core card (value empty, or only suggested_*): stay out of the queue
+  exclude_strangers: true      # people you don't follow stay in ENGAGED.md until you confirm a card
   score:                       # plain points, added up
     value:       { collab: 3, ideas: 2, support: 2, signal: 1, vibes: 0.5 }
     next_action: { "propose a collab": 3, "send a DM": 3, "reply sometimes": 2 }
     in_my_niche: 1             # groups / topics from about_me.niche
     my_notes: 0.5              # you wrote something about them
-    warm_contact: 1            # notes say you know each other, talked, worked together
+    warm_contact: 2            # 2+ two-way touches, or notes that you know each other / talked / worked together
     mutual_or_active: 0.5
-    they_engage_with_me: 1     # they are in ENGAGED.md
+    they_engage_with_me: 1     # they are in ENGAGED.md and already have a confirmed core card
     days_since_last_touch:     # continuous ranges, no gaps
       never: 0.5
       "0-6": -2
@@ -235,19 +279,20 @@ queue:
     shown_last_2_weeks: -3     # so the list rotates
   # Applied for every goal in about_me.goals, scaled by position
   # (1st = ×1, 2nd = ×0.5, 3rd = ×0.25, 4th = ×0.1). Defined per goal, not per "starts with".
+  # Do not add value.ideas again under the ideas goal: that score already lives in value.
   goal_bonus:
-    ideas:    { "value.ideas": 2, "value.signal": 1 }
+    ideas:    { "value.signal": 1 }
     collabs:  { "value.collab": 3, "next_action.propose a collab": 2, "next_action.send a DM": 2 }
     audience: { "next_action.reply sometimes": 2, they_engage_with_me: 1 }
-    reading:  { "value.signal": 1, "value.ideas": 0.5, queue_size_factor: 0.7 }
-  use_suggestions_in_review_mode: true   # if value / next_action are still empty, score from suggested_* instead
+    support:  { "value.support": 2, warm_contact: 1 }
+    reading:  { "value.signal": 1, queue_size_factor: 0.7 }
 ```
 
-In plain words: people who matter more to you, with a "talk to them" next step, from your niche, whom you know, and whom you have not touched for a while come first. Every goal you listed adds its own bonus, strongest for the one you put first.
+In plain words: people who matter more to you, with a "talk to them" next step, from your niche, whom you already have a two-way history with, and whom you have not touched for a while come first. Warm contacts always outrank strangers. Every goal you listed adds its own bonus, strongest for the one you put first — including support. Unconfirmed people, if mentioned at all, get a marker and are still not scored into the queue.
 
 ## 11. Engaged: people who come to you
 
-`ENGAGED.md` lists people, followed or not, who interact with your posts. A light card, not a full one.
+`ENGAGED.md` lists people, followed or not, who interact with your posts. A light card, not a full one. Strangers (people you don't follow) stay on this list for you to review and do not enter the contact queue until you confirm a card.
 
 ```yaml
 engaged:
@@ -260,6 +305,7 @@ engaged:
   suggest_move_if: "substantive, 3+ substantive interactions, no core card yet"
   skip: "accounts in bots/"
   keep_manual_fields: true     # status and notes you set are never overwritten
+  strangers_stay_here: true    # no queue entry until you confirm a card
 ```
 
 "Move to the core" is the same signal as in section 9 (followers): there is no separate rule. You decide; then the assistant creates a full card.
@@ -275,6 +321,7 @@ weekly_digest:
   sections: ["strong posts and ideas from priority people", "sleeping accounts that woke up this week",
              "top engaged of the week: substantive / wow", "next week's queue"]
   data_refresh: true               # step 0: re-read follow lists and core profile fields in batches, no timelines
+  refresh_also: ["FOLLOWERS.md", "VERIFIED.md"]  # same follower read, no extra timeline reads
   improvement_questions: 3-5       # one click card at the end; logged in _questions-log.json, never repeated
   read_budget: 100
 ```
@@ -287,12 +334,15 @@ These are not cards. The assistant creates and updates them; do not edit them by
 
 ```yaml
 state_files:
-  _state.json: "since_ids for your posts and mentions, last run time, reads used today, and the full stored follow list (every handle you follow, not a truncated first-N page)"
+  _state.json: "since_ids for your posts and mentions, last run time, reads used today, the stored follow list (every handle you follow, not a truncated first-N page), and follow_list_complete (true when every follow is stored; false for a capped or test run)"
   _anchors.json: "latest post ids for the watchlist and for last week's digest comparison"
-  _build-log.md: "the first-build log: reads used, timing, card counts, auto vs review"
+  _build-log.md: "the first-build log: reads used, timing, card counts, auto vs disputed"
+  _review-log.json: "who has already been shown, including everyone who appeared on the unfollow list, plus the disputed_backlog"
 ```
 
-The daily new-follow check compares the current following list against the full stored follow list in `_state.json`, never against a truncated first-N slice of the API.
+The daily new-follow check compares the current following list against the stored follow list in `_state.json`, never against a truncated first-N slice of the API. If `follow_list_complete` is `false` (a capped or test run), the check only compares against the stored subset and must say so in the briefing.
+
+Appearing on the unfollow list (`QUARANTINE.md`) counts as "shown" in `_review-log.json`.
 
 ## Deferred ideas
 
