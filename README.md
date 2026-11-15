@@ -7,7 +7,7 @@ You answer a few short questions, mostly with clicks. The assistant does the rea
 
 ## Install in one sentence
 
-- **Easiest:** copy the ready [xGrok network bot template](https://x.ai/bot/jqk8dGlu9TyhszeRIVORf) in one click, and the new bot walks you through setup.
+- **Easiest:** copy the ready [xGrok network bot template](https://x.ai/bot/jqk8dGIu9TyhszeRlVORf) in one click, and the new bot walks you through setup.
 - **Or tell your Grok Bot:** "Install the skill from https://github.com/azkian1/xGrok-network and set up my network CRM."
 
 The bot reads [SKILL.md](SKILL.md), asks you a few questions (niche, goals, what to grow, priority people, when to send briefings), builds your base, and creates the routines. No copying files or prompts.
