@@ -294,7 +294,7 @@ state_files:
 
 The daily new-follow check compares the current following list against the full stored follow list in `_state.json`, never against a truncated first-N slice of the API.
 
-## Deferred ideas (not in this version)
+## Deferred ideas
 
 - Network roles (connector / knowledge holder / bridge): needs a who-talks-to-whom graph, which is expensive to read.
 - "New follows of your priority people": very expensive on X; if needed, 5–10 people once a week.

@@ -75,12 +75,8 @@ These rules took shape while the kit was tried on a real account with ~350 follo
 **Why.** A base built once goes stale. Tiny, regular corrections keep it aligned with what the owner actually values, without a big review session.
 
 ## Next (roadmap)
-- **Done in this version:** the weekly digest with data refresh and improvement questions, touch history, the priority queue, and the engaged layer.
+- **Done:** the weekly digest with data refresh and improvement questions, touch history, the priority queue, and the engaged layer.
 - **Deferred:** network roles (connector / knowledge holder / bridge), "new follows of your priority people", and cluster visualization. They need a who-talks-to-whom graph or many reads.
 - Every N weeks, refresh old cards from a fresh slice.
 - Send answers directly from the page, without copying lines.
 - Tell a real person from a spam farm more accurately.
-
-## Version history
-
-- **v1.6** (2026-11-15). Fixes from a test install: complete kit file list with a git-clone fallback; cleanup list when nobody reaches `silent_after_days`; first-run classification uses `about_me` (no past decisions yet) and a tighter `disputed_if`; suggestions live in `suggested_*` fields until confirmed; continuous queue day-ranges and per-goal weights; FOLLOWERS.md activity thresholds; state files `_state.json`, `_anchors.json`, `_build-log.md`; explicit X API limits; daily new-follow check against the full stored follow list.
